@@ -6,7 +6,7 @@ import asyncio
 from discord.ext import commands
 
 
-TOKEN = "Nzk5Mzc2NjEyMTQ3MzMxMTQ0.YACrfA.lCKs42Id2goyMFR2StMuh6uxXA0"
+TOKEN = "Your token goes here"
 intents = discord.Intents.default()
 intents.members = True
 
@@ -52,4 +52,3 @@ async def test(ctx):
                    "life. God keep thee! Push not off from that isle, thou canst never return!")
 
 Colville.run(TOKEN)
-
