@@ -106,6 +106,16 @@ async def Bark(ctx):
 
 
 @Colville.command()
+async def QuoteSpell(ctx, name):
+    name = name.lower()
+    message = ''
+    with open(f"spells/{name}.txt") as spellfile:
+        for line in spellfile.readlines():
+            message += line
+    await ctx.send(message)
+
+
+@Colville.command()
 async def RollInit(ctx):
     Colville.Initiative.rollup_initiative()
     sendout = Colville.Initiative.present()
