@@ -7,7 +7,7 @@ import asyncio
 from discord.ext import commands
 
 
-TOKEN = "Your Token goes here"
+TOKEN = "Your Token goes here     jj "
 intents = discord.Intents.default()
 intents.members = True
 
@@ -65,6 +65,44 @@ Colville = colvile()
 @Colville.event
 async def on_ready():
     print("This bot has connected to the server")
+
+
+@Colville.command()
+async def RollDice(ctx, *args):
+    errormsg = f"The format for this tool is : prefix command *nDx bonus. Please use that format."
+    total = 0
+    returnstring = "|"
+    for x in range(len(args) - 1):
+        temptotal = 0
+        splitdice = args[x].lower().split("d")
+        quantity, dice = int(splitdice[0]), int(splitdice[1])
+        returnstring += f"{args[x]}="
+        for y in range(quantity - 1):
+            val = random.randint(0, dice)
+            temptotal += val
+            returnstring += f"{val}+"
+        val = random.randint(0,dice)
+        temptotal += val
+        returnstring += f"{val}="
+        returnstring += f"{temptotal}|"
+        total += temptotal
+    returnstring += f"bonus: {args[len(args) - 1]}|"
+    total += int(args[len(args) - 1])
+    returnstring += f"total = {total}"
+    await ctx.send(returnstring)
+
+
+@Colville.command()
+async def Bark(ctx):
+    message = "I have the following commands:\n" \
+              "RollInit: rolls a new initiative order\n" \
+              "\tformat: None\n" \
+              "NewJoin: adds a new player to initiative, and adds them to combat order\n" \
+              "\tformat:player_name:str bonus:int\n" \
+              "NewMember: Adds a new player, but does not roll them into initiative\n" \
+              "\tformat: player_name:str bonus:int\n" \
+              "\t"
+    await ctx.send(message)
 
 
 @Colville.command()
