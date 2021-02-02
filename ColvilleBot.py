@@ -72,47 +72,61 @@ async def RollDice(ctx, *args):
     errormsg = f"The format for this tool is : prefix command *nDx bonus. Please use that format."
     total = 0
     returnstring = "|"
-    for x in range(len(args) - 1):
-        temptotal = 0
-        splitdice = args[x].lower().split("d")
-        quantity, dice = int(splitdice[0]), int(splitdice[1])
-        returnstring += f"{args[x]}="
-        for y in range(quantity - 1):
-            val = random.randint(0, dice)
+    try:
+        for x in range(len(args) - 1):
+            temptotal = 0
+            splitdice = args[x].lower().split("d")
+            quantity, dice = int(splitdice[0]), int(splitdice[1])
+            returnstring += f"{args[x]}="
+            for y in range(quantity - 1):
+                val = random.randint(0, dice)
+                temptotal += val
+                returnstring += f"{val}+"
+            val = random.randint(0,dice)
             temptotal += val
-            returnstring += f"{val}+"
-        val = random.randint(0,dice)
-        temptotal += val
-        returnstring += f"{val}="
-        returnstring += f"{temptotal}|"
-        total += temptotal
-    returnstring += f"bonus: {args[len(args) - 1]}|"
-    total += int(args[len(args) - 1])
-    returnstring += f"total = {total}"
-    await ctx.send(returnstring)
+            returnstring += f"{val}="
+            returnstring += f"{temptotal}|"
+            total += temptotal
+        returnstring += f"bonus: {args[len(args) - 1]}|"
+        total += int(args[len(args) - 1])
+        returnstring += f"total = {total}"
+        await ctx.send(returnstring)
+    except ValueError:
+        await ctx.send(errormsg)
 
 
 @Colville.command()
 async def Bark(ctx):
     message = "I have the following commands:\n" \
-              "RollInit: rolls a new initiative order\n" \
-              "\tformat: None\n" \
-              "NewJoin: adds a new player to initiative, and adds them to combat order\n" \
-              "\tformat:player_name:str bonus:int\n" \
+              "for formatting information on any of them, use the command: Usage\n" \
+              "RollInit: Rolls a new initiative order\n" \
+              "NewJoin: Adds a new player to initiative, and adds them to combat order\n" \
               "NewMember: Adds a new player, but does not roll them into initiative\n" \
-              "\tformat: player_name:str bonus:int\n" \
-              "\t"
+              "PresentInit: Prints out the current initiative order\n" \
+              "QuoteSpell: Reads out the contents of a spell from the handbook\n" \
+              "Test: Reads a passage from Moby Dick to confirm that I can send messages!"
     await ctx.send(message)
 
 
 @Colville.command()
-async def QuoteSpell(ctx, name):
-    name = name.lower()
+async def QuoteSpell(ctx, *args):
+    if not args:
+        await ctx.send("Please specify a spell that you want me to quote.")
+    name = ''
+    for arg in args:
+        name += arg.lower()
     message = ''
-    with open(f"spells/{name}.txt") as spellfile:
-        for line in spellfile.readlines():
-            message += line
-    await ctx.send(message)
+    try:
+        with open(f"spells/{name}.txt") as spellfile:
+            for line in spellfile.readlines():
+                message += line
+        await ctx.send(message)
+    except FileNotFoundError:
+        errormessage = ''
+        for arg in args:
+            errormessage += arg
+        await ctx.send(f"I'm afraid the spell '{errormessage}' does no exist.")
+
 
 
 @Colville.command()
