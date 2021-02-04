@@ -1,6 +1,9 @@
 """
 This is the first version of the Colville Bot
 """
+from Character import character
+import pickle
+import os.path
 import random
 import discord
 import asyncio
@@ -52,14 +55,14 @@ class Initiative:
         return send_string
 
 
-class colvile(commands.Bot):
+class colville(commands.Bot):
 
     def __init__(self):
         super().__init__(command_prefix='Colville ')
         self.Initiative = Initiative()
 
 
-Colville = colvile()
+Colville = colville()
 
 
 @Colville.event
@@ -68,8 +71,72 @@ async def on_ready():
 
 
 @Colville.command()
+async def NewCharacter(ctx, *args):
+    name = ''
+    for x in range(len(args) - 1):
+        name += f"{args[x]} "
+    name += args[len(args) - 1]
+    searchname = ''.join(arg.lower() for arg in args)
+    if os.path.exists(f"Characters/{searchname}.pickle"):
+        await ctx.send(f"I'm sorry, a character by the name {name} already exists!\n"
+                       f"Consider using the DeleteCharacter command to get rid of it!")
+    else:
+        newcharacter = character(name)
+        with open(f"Characters/{searchname}.pickle", "wb+") as charsheet:
+            pickle.dump(newcharacter, charsheet)
+            await ctx.send(f"The character {name} has been created")
+
+
+@Colville.command()
+async def DeleteCharacter(ctx, *args):
+    name = ''
+    for x in range(len(args) - 1):
+        name += f"{args[x]} "
+    name += args[len(args) - 1]
+    searchname = ''.join(arg.lower() for arg in args)
+    if os.path.exists(f"Characters/{searchname}.pickle"):
+        os.remove(f"Characters/{searchname}.pickle")
+        await ctx.send(f"The character {name} has been thrown into the void")
+    else:
+        await ctx.send(f"I'm sorry, the character {name} doesn't appear to exist.\n"
+                       f"So I guess you didn't need to delete it anyway, huh?")
+
+
+@Colville.command()
+async def SetAttribute(ctx, *args):
+    errormessage = "The use of this function is as follows: attribute(three letters) value(integer) Character Name"
+    if not args:
+        await ctx.send("You don't appear to have provided any arguments for that command!")
+    elif len(args) < 3:
+        await ctx.send(errormessage)
+    else:
+        try:
+            value = int(args[1])
+            searchname = ''
+            for arg in args[2:]:
+                searchname += arg
+            charfile = open(f"Characters/{searchname}.pickle", "rb")
+            tempchar = pickle.load(charfile)
+            charfile.close()
+            os.remove(f"Characters/{searchname}.pickle")
+            tempchar.updateAttribute(args[0], value)
+            output = open(f"Characters/{searchname}.pickle", "wb")
+            pickle.dump(tempchar, output)
+        except ValueError:
+            await ctx.send(errormessage)
+
+
+@Colville.command()
+async def CallCharacterName(ctx, *args):
+    searchname = ''.join(arg.lower() for arg in args)
+    with open(f"Characters/{searchname}.pickle", 'rb') as charfile:
+        tempchar = pickle.load(charfile)
+        await ctx.send(f"The character {tempchar.name} has a strenght of {tempchar.attributes['str']}")
+
+
+@Colville.command()
 async def RollDice(ctx, *args):
-    errormsg = f"The format for this tool is : prefix command *nDx bonus. Please use that format."
+    errormsg = f"The format for this tool is : prefix command *nDx bonus.\nPlease use that format."
     total = 0
     returnstring = "|"
     try:
@@ -172,4 +239,3 @@ async def test(ctx):
                    "life. God keep thee! Push not off from that isle, thou canst never return!")
 
 Colville.run(TOKEN)
-
