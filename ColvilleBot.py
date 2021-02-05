@@ -32,6 +32,28 @@ async def on_ready():
 
 
 @Colville.command()
+async def Use(ctx, command):
+    command = command.lower()
+    if not command:
+        await ctx.send("Oops! it doesn't look like you provided a function for me to explain!")
+    elif command.startswith('newcharacter'):
+        await ctx.send("Colville NewCharacter Name(*args)\n"
+                       "Creates a new .pickle file with your character object stored inside.")
+    elif command.startswith('deletecharacter'):
+        await ctx.send("Colville DeleteCharacter Name(*args)\n"
+                       "Deletes the character pickle file if present, or tell you if that file doesn't exist.")
+    elif command.startswith('setlevel'):
+        await ctx.send("Colville SetLevel 'level'(int) name(*args)\n"
+                       "Sets the level of the named character to the given integer")
+    elif command.startswith('bark'):
+        await ctx.send("Colville Bark\n"
+                       "Colville reports all the commands it contains, and summarizes their use.")
+    elif command.startswith('quotespell'):
+        await ctx.send("Colville QuoteSpell 'spell name'(*args)\n"
+                       "If the spell exists, Colville reports the contents of the spell.")
+
+
+@Colville.command()
 async def NewCharacter(ctx, *args):
     name = ''
     for x in range(len(args) - 1):
@@ -292,3 +314,4 @@ async def test(ctx):
                    "life. God keep thee! Push not off from that isle, thou canst never return!")
 
 Colville.run(TOKEN)
+
