@@ -103,6 +103,31 @@ async def DeleteCharacter(ctx, *args):
 
 
 @Colville.command()
+async def SetLevel(ctx, *args):
+    errormessage = "The use of this function is as follows: Level(int), Character Name"
+    if not args:
+        await ctx.send("You don't appear to have provided any arguments for that command!")
+    elif len(args)<2:
+        await ctx.send(errormessage)
+    else:
+        try:
+            lvl = int(args[0])
+            searchname = ''
+            for arg in args[1:]:
+                searchname += arg.lower()
+            charsheet = open(f"Characters/{searchname}.pickle", 'rb')
+            tempchar = pickle.load(charsheet)
+            charsheet.close()
+            tempchar.level = lvl
+            os.remove(f"Characters/{searchname}.pickle")
+            with open(f"Characters/{searchname}.pickle", 'wb') as newchar:
+                pickle.dump(tempchar, newchar)
+            await ctx.send("Done!")
+        except ValueError:
+            await ctx.send(errormessage)
+
+
+@Colville.command()
 async def SetAttribute(ctx, *args):
     errormessage = "The use of this function is as follows: attribute(three letters) value(integer) Character Name"
     if not args:
@@ -122,6 +147,7 @@ async def SetAttribute(ctx, *args):
             tempchar.updateAttribute(args[0], value)
             output = open(f"Characters/{searchname}.pickle", "wb")
             pickle.dump(tempchar, output)
+            await ctx.send("Done!")
         except ValueError:
             await ctx.send(errormessage)
 
@@ -223,6 +249,72 @@ async def NewMember(ctx, member, bonus):
 async def PresentInit(ctx):
     this = Colville.Initiative.present()
     await ctx.send(this)
+
+
+@Colville.command()
+async def SendMe(ctx, *args):
+    prefix = args[0].lower().strip("'?-)(*&^%$$#@!{}[]|=+-")
+    searchname = ''
+    for arg in args[1:]:
+        searchname += arg
+    if prefix == 'npcs' or prefix == 'npc':
+        await ctx.send(file=discord.File(f"NPCs/{searchname}.txt"))
+    elif prefix == 'spell' or prefix == 'spells':
+        await ctx.send(file=discord.File(f"Spells/{searchname}.txt"))
+    elif prefix == 'characters' or prefix == 'character':
+        await ctx.send(file=discord.File(f"Characters/{searchname}.pickle"))
+    else:
+        await ctx.send("I'm Sorry, I don't recognize that prefix.")
+
+
+@Colville.command()
+async def NewNPC(ctx, *args):
+    npcName = ''.join(arg.lower() for arg in args)
+    npcFileName = ' '.join(arg for arg in args)
+    with open(f"NPCs/{npcName}.txt", "w+") as newNPC:
+        newNPC.write(npcFileName + '\n')
+    await ctx.send("The new NPC has been created!")
+
+
+@Colville.command()
+async def DeleteNPC(ctx, *args):
+    npcName = ''.join(arg.lower() for arg in args)
+    if os.path.exists(f"NPCs/{npcName}.txt"):
+        os.remove(f"NPCs/{npcName}.txt")
+        await ctx.send("Done!")
+    else:
+        await ctx.send("Oops! That NPC doesn't appear to exist!")
+
+
+@Colville.command()
+async def AppendNPC(ctx, *args):
+    errormessage = "The format of this tool is as folows: Character name | Message.\n" \
+                   "The '|' is important, and must be spaced."
+    if '|' not in args:
+        await ctx.send(errormessage)
+        return
+    argpointer = 0
+    charname = ''
+    message = ''
+    while args[argpointer] != '|':
+        charname += args[argpointer]
+        argpointer += 1
+    argpointer+= 1
+    for arg in args[argpointer:]:
+        message+= arg + ' '
+    with open(f"NPCs/{charname}.txt", "a") as npcFile:
+        npcFile.write(f"{message}\n\n")
+
+
+
+@Colville.command()
+async def presentNPC(ctx, *args):
+    npcName = ''.join(arg.lower() for arg in args)
+    message = ''
+    with open(f"NPCs/{npcName}.txt", 'r') as npctext:
+        for line in npctext.readlines():
+            message += line
+    await ctx.send(message)
 
 
 @Colville.command()
