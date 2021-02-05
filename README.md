@@ -12,6 +12,7 @@ free to copy it, branch it, or work it up for your own personal needs! I hope it
 your dnd games at this time when we're all having to play dnd from home.
 
 HOW TO INSTALL
+
   Download the py files provided here, as well as all of the directories I have provided (or you
 can make your own directories with the same names) to a folder of your choice. Get a token for 
 your bot from discord, paste it into the ColvilleBot.py file where it says token, and run the 
@@ -25,6 +26,7 @@ https://realpython.com/how-to-make-a-discord-bot-python/
 
 
 HOW TO USE
+
   The Colville Bot recognizes your commands when you start your message with a prefix. I have
 set the prefix as 'Colville ', but you can set it up to whatever you like. You will find the
 prefix in the instantiation of the command class. If you want something shorter, I highly
