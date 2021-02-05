@@ -29,8 +29,8 @@ HOW TO USE
 set the prefix as 'Colville ', but you can set it up to whatever you like. You will find the
 prefix in the instantiation of the command class. If you want something shorter, I highly
 suggest a prefix which you're not going to use in a lot of other messages. Usually something
-like '>' or '~' will be perfect for that. Consider that when you set up the prefix the spaces
-included will be part of the prefix, meaning that '~' != '~ '.
+like '>' will be perfect for that. Consider that when you set up the prefix the spaces
+included will be part of the prefix, meaning that '>' != '> '.
 
   The function you want to call is the next argument in the message. So if I want to call the
 bot to use the 'test' function, my message would be as follows:
