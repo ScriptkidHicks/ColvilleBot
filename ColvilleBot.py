@@ -51,6 +51,9 @@ async def Use(ctx, command):
     elif command.startswith('quotespell'):
         await ctx.send("Colville QuoteSpell 'spell name'(*args)\n"
                        "If the spell exists, Colville reports the contents of the spell.")
+    else:
+        await ctx.send(f"Uh oh, I don't recognize the command {command}!\n"
+                       f"If you need a list of commands, please try the command 'Bark'(no arguments).")
 
 
 @Colville.command()
@@ -271,21 +274,23 @@ async def DeleteNPC(ctx, *args):
 
 @Colville.command()
 async def AppendNPC(ctx, *args):
-    errormessage = "The format of this tool is as folows: Character name | Message.\n" \
+    errormessage = "The format of this tool is as follows: Character name | Message.\n" \
                    "The '|' is important, and must be spaced."
-    if '|' not in args:
+    if ('|' not in args) or (len(args) < 2):
         await ctx.send(errormessage)
         return
     argpointer = 0
-    charname = ''
+    CharName = ''
     message = ''
     while args[argpointer] != '|':
-        charname += args[argpointer]
+        CharName += args[argpointer]
         argpointer += 1
     argpointer+= 1
+    if not os.path.exists(f"NPCs/{CharName}.txt"):
+        await ctx.send("I'm sorry, but that NPC doesn't appear to exist!")
     for arg in args[argpointer:]:
         message+= arg + ' '
-    with open(f"NPCs/{charname}.txt", "a") as npcFile:
+    with open(f"NPCs/{CharName}.txt", "a") as npcFile:
         npcFile.write(f"{message}\n\n")
 
 
@@ -294,7 +299,62 @@ async def AppendNPC(ctx, *args):
 async def presentNPC(ctx, *args):
     npcName = ''.join(arg.lower() for arg in args)
     message = ''
+    if not os.path.exists(f"NPCs/{npcName}.txt"):
+        await ctx.send("I'm sorry, that quest doesn't seem to exist!")
     with open(f"NPCs/{npcName}.txt", 'r') as npctext:
+        for line in npctext.readlines():
+            message += line
+    await ctx.send(message)
+
+
+@Colville.command()
+async def NewQuest(ctx, *args):
+    QuestFileName = ''.join(arg.lower() for arg in args)
+    QuestName = ' '.join(arg for arg in args)
+    with open(f"Quests/{QuestFileName}.txt", "w+") as newNPC:
+        newNPC.write(QuestName + '\n')
+    await ctx.send("The new quest has been created!")
+
+
+@Colville.command()
+async def DeleteQuest(ctx, *args):
+    QuestName = ''.join(arg.lower() for arg in args)
+    if os.path.exists(f"Quests/{QuestName}.txt"):
+        os.remove(f"Quests/{QuestName}.txt")
+        await ctx.send("Done!")
+    else:
+        await ctx.send("Oops! That quest doesn't appear to exist!")
+
+
+@Colville.command()
+async def AppendQuest(ctx, *args):
+    errormessage = "The format of this tool is as follows: Quest Name | Message.\n" \
+                   "The '|' is important, and must be spaced."
+    if ('|' not in args) or (len(args) < 2):
+        await ctx.send(errormessage)
+        return
+    argpointer = 0
+    QuestName = ''
+    message = ''
+    while args[argpointer] != '|':
+        QuestName += args[argpointer]
+        argpointer += 1
+    argpointer += 1
+    if not os.path.exists(f"Quests/{QuestName}.txt"):
+        await ctx.send("I'm sorry, but that quest doesn't appear to exist!")
+    for arg in args[argpointer:]:
+        message += arg + ' '
+    with open(f"Quests/{QuestName}.txt", "a") as npcFile:
+        npcFile.write(f"{message}\n\n")
+
+
+@Colville.command()
+async def PresentQuest(ctx, *args):
+    QuestName = ''.join(arg.lower() for arg in args)
+    message = ''
+    if not os.path.exists(f"Quests/{QuestName}.txt"):
+        await ctx.send("I'm sorry, that quest doesn't seem to exist!")
+    with open(f"Quests/{QuestName}.txt", 'r') as npctext:
         for line in npctext.readlines():
             message += line
     await ctx.send(message)
@@ -314,4 +374,3 @@ async def test(ctx):
                    "life. God keep thee! Push not off from that isle, thou canst never return!")
 
 Colville.run(TOKEN)
-
