@@ -11,7 +11,7 @@ import asyncio
 from discord.ext import commands
 
 
-TOKEN = "Your Token goes here     jj "
+TOKEN = "Your Token goes here"
 intents = discord.Intents.default()
 intents.members = True
 
@@ -19,7 +19,7 @@ intents.members = True
 class colville(commands.Bot):
 
     def __init__(self):
-        super().__init__(command_prefix='Colville ')
+        super().__init__(command_prefix='Colville ', )
         self.Initiative = Initiative()
 
 
@@ -29,6 +29,19 @@ Colville = colville()
 @Colville.event
 async def on_ready():
     print("This bot has connected to the server")
+
+
+@Colville.command()
+async def Bark(ctx):
+    message = "I have the following commands:\n" \
+              "for formatting information on any of them, use the command: Usage\n" \
+              "RollInit: Rolls a new initiative order\n" \
+              "NewJoin: Adds a new player to initiative, and adds them to combat order\n" \
+              "NewMember: Adds a new player, but does not roll them into initiative\n" \
+              "PresentInit: Prints out the current initiative order\n" \
+              "QuoteSpell: Reads out the contents of a spell from the handbook\n" \
+              "Test: Reads a passage from Moby Dick to confirm that I can send messages!"
+    await ctx.send(message)
 
 
 @Colville.command()
@@ -64,7 +77,8 @@ async def NewCharacter(ctx, *args):
     name += args[len(args) - 1]
     searchname = ''.join(arg.lower() for arg in args)
     if os.path.exists(f"Characters/{searchname}.pickle"):
-        await ctx.send(f"I'm sorry, a character by the name {name} already exists!\n"
+        await ctx.send(f"I'm sorry {ctx.author.nick if ctx.author.nick else ctx.author.name}"
+                       f", a character by the name {name} already exists!\n"
                        f"Consider using the DeleteCharacter command to get rid of it!")
     else:
         newcharacter = character(name)
@@ -84,7 +98,8 @@ async def DeleteCharacter(ctx, *args):
         os.remove(f"Characters/{searchname}.pickle")
         await ctx.send(f"The character {name} has been thrown into the void")
     else:
-        await ctx.send(f"I'm sorry, the character {name} doesn't appear to exist.\n"
+        await ctx.send(f"I'm sorry {ctx.author.nick if ctx.author.nick else ctx.author.name}"
+                       f", the character {name} doesn't appear to exist.\n"
                        f"So I guess you didn't need to delete it anyway, huh?")
 
 
@@ -143,7 +158,7 @@ async def CallCharacterName(ctx, *args):
     searchname = ''.join(arg.lower() for arg in args)
     with open(f"Characters/{searchname}.pickle", 'rb') as charfile:
         tempchar = pickle.load(charfile)
-        await ctx.send(f"The character {tempchar.name} has a strenght of {tempchar.attributes['str']}")
+        await ctx.send(f"The character {tempchar.name} has a strength of {tempchar.attributes['str']}")
 
 
 @Colville.command()
@@ -175,22 +190,10 @@ async def RollDice(ctx, *args):
 
 
 @Colville.command()
-async def Bark(ctx):
-    message = "I have the following commands:\n" \
-              "for formatting information on any of them, use the command: Usage\n" \
-              "RollInit: Rolls a new initiative order\n" \
-              "NewJoin: Adds a new player to initiative, and adds them to combat order\n" \
-              "NewMember: Adds a new player, but does not roll them into initiative\n" \
-              "PresentInit: Prints out the current initiative order\n" \
-              "QuoteSpell: Reads out the contents of a spell from the handbook\n" \
-              "Test: Reads a passage from Moby Dick to confirm that I can send messages!"
-    await ctx.send(message)
-
-
-@Colville.command()
 async def QuoteSpell(ctx, *args):
     if not args:
-        await ctx.send("Please specify a spell that you want me to quote.")
+        await ctx.send(f"{ctx.author.nick if ctx.author.nick else ctx.author.name},"
+                       f"please specify a spell that you want me to quote.")
     name = ''
     for arg in args:
         name += arg.lower()
@@ -204,7 +207,7 @@ async def QuoteSpell(ctx, *args):
         errormessage = ''
         for arg in args:
             errormessage += arg
-        await ctx.send(f"I'm afraid the spell '{errormessage}' does no exist.")
+        await ctx.send(f"I'm afraid the spell '{errormessage}' does not exist.")
 
 
 
@@ -250,7 +253,8 @@ async def SendMe(ctx, *args):
     elif prefix == 'characters' or prefix == 'character':
         await ctx.send(file=discord.File(f"Characters/{searchname}.pickle"))
     else:
-        await ctx.send("I'm Sorry, I don't recognize that prefix.")
+        await ctx.send(f"I'm sorry {ctx.author.nick if ctx.author.nick else ctx.author.name},"
+                       f" I don't recognize that prefix.")
 
 
 @Colville.command()
@@ -259,7 +263,7 @@ async def NewNPC(ctx, *args):
     npcFileName = ' '.join(arg for arg in args)
     with open(f"NPCs/{npcName}.txt", "w+") as newNPC:
         newNPC.write(npcFileName + '\n')
-    await ctx.send("The new NPC has been created!")
+    await ctx.send(f"The new NPC has been created {ctx.author.nick if ctx.author.nick else ctx.author.name}!")
 
 
 @Colville.command()
@@ -269,7 +273,8 @@ async def DeleteNPC(ctx, *args):
         os.remove(f"NPCs/{npcName}.txt")
         await ctx.send("Done!")
     else:
-        await ctx.send("Oops! That NPC doesn't appear to exist!")
+        await ctx.send(f"Oops, sorry {ctx.author.nick if ctx.author.nick else ctx.author.name}!"
+                       f" That NPC doesn't appear to exist!")
 
 
 @Colville.command()
@@ -287,12 +292,12 @@ async def AppendNPC(ctx, *args):
         argpointer += 1
     argpointer+= 1
     if not os.path.exists(f"NPCs/{CharName}.txt"):
-        await ctx.send("I'm sorry, but that NPC doesn't appear to exist!")
+        await ctx.send(f"I'm sorry {ctx.author.nick if ctx.author.nick else ctx.author.name},"
+                       f" but that NPC doesn't appear to exist!")
     for arg in args[argpointer:]:
         message+= arg + ' '
     with open(f"NPCs/{CharName}.txt", "a") as npcFile:
         npcFile.write(f"{message}\n\n")
-
 
 
 @Colville.command()
@@ -323,7 +328,8 @@ async def DeleteQuest(ctx, *args):
         os.remove(f"Quests/{QuestName}.txt")
         await ctx.send("Done!")
     else:
-        await ctx.send("Oops! That quest doesn't appear to exist!")
+        await ctx.send(f"Oops, sorry {ctx.author.nick if ctx.author.nick else ctx.author.name}!"
+                       f" That quest doesn't appear to exist!")
 
 
 @Colville.command()
@@ -341,7 +347,7 @@ async def AppendQuest(ctx, *args):
         argpointer += 1
     argpointer += 1
     if not os.path.exists(f"Quests/{QuestName}.txt"):
-        await ctx.send("I'm sorry, but that quest doesn't appear to exist!")
+        await ctx.send(f"I'm sorry {ctx.author.nick if ctx.author.nick else ctx.author.name}, but that quest doesn't appear to exist!")
     for arg in args[argpointer:]:
         message += arg + ' '
     with open(f"Quests/{QuestName}.txt", "a") as npcFile:
@@ -358,6 +364,11 @@ async def PresentQuest(ctx, *args):
         for line in npctext.readlines():
             message += line
     await ctx.send(message)
+
+
+@Colville.command()
+async def test2(ctx):
+    await ctx.send(f"This message sent by {ctx.author.nick if ctx.author.nick else ctx.author.name}")
 
 
 @Colville.command()
