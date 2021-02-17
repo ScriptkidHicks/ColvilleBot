@@ -3,11 +3,11 @@ This is the first version of the Colville Bot
 """
 from Initiative import Initiative
 from Character import character
-import pickle
-import os.path
 import random
 import discord
 import asyncio
+import pickle
+import os
 from discord.ext import commands
 
 
@@ -19,11 +19,15 @@ intents.members = True
 class colville(commands.Bot):
 
     def __init__(self):
-        super().__init__(command_prefix='Colville ', )
+        super().__init__(command_prefix=['Colville', '~', '>', '$'], case_insensitive=True)
         self.Initiative = Initiative()
 
 
 Colville = colville()
+client = discord.Client()
+
+def to_lower(argument):
+    return argument.lower()
 
 
 @Colville.event
@@ -123,32 +127,100 @@ async def SetLevel(ctx, *args):
             os.remove(f"Characters/{searchname}.pickle")
             with open(f"Characters/{searchname}.pickle", 'wb') as newchar:
                 pickle.dump(tempchar, newchar)
-            await ctx.send("Done!")
+            await ctx.send(f"{ctx.author.nick if ctx.author.nick else ctx.author.name} I have finished!")
         except ValueError:
             await ctx.send(errormessage)
 
 
 @Colville.command()
-async def SetAttribute(ctx, *args):
-    errormessage = "The use of this function is as follows: attribute(three letters) value(integer) Character Name"
+async def SetAttributes(ctx, *args: to_lower):
+    errormessage = "The use of this function is as follows:\n" \
+                   "you can pass in any number of attribute value pairings\n" \
+                   "Colville SetAttributes name(s) | Attribute=Value\n" \
+                   "ex: Colville SetAttributes str=12 int=13\n" \
+                   "please do not use spaces between attribute, equals, and value."
     if not args:
         await ctx.send("You don't appear to have provided any arguments for that command!")
     elif len(args) < 3:
         await ctx.send(errormessage)
     else:
         try:
-            value = int(args[1])
+            messageindex = 0
+            name = ''
+            while args[messageindex] != '|':
+                name += args[messageindex]
+                messageindex += 1
+            messageindex += 1
+            if not os.path.exists(f"Characters/{name}.pickle"):
+                await ctx.send(f"I'm sorry {ctx.author.nick if ctx.author.nick else ctx.author.name},"
+                               f" a character with that name doesn't exist.")
+                return
+            charsheet = open(f"Characters/{name}.pickle", "rb")
+            tempchar = pickle.load(charsheet)
+            charsheet.close()
+            for arg in args[messageindex:]:
+                try:
+                    atr = arg.split("=")
+                    if atr[0] in tempchar.attributes:
+                        tempchar.attributes[atr[0]] = int(atr[1])
+                except:
+                    await ctx.send(errormessage)
+                    return
+            os.remove(f"Characters/{name}.pickle")
+            with open(f"Characters/{name}.pickle", "wb") as newchar:
+                pickle.dump(tempchar, newchar)
+            await ctx.send(f"{ctx.author.nick if ctx.author.nick else ctx.author.name} I have finished!")
+        except:
+            await ctx.send(errormessage)
+            return
+
+
+@Colville.command()
+async def SetAge(ctx, *args: to_lower):
+    errormessage = "The use of this function is as follows: Age(int) Character Name"
+    if not args:
+        await ctx.send("You don't appear to have provided any arguments for that command!")
+    elif len(args)<2:
+        await ctx.send(errormessage)
+    else:
+        try:
+            age = int(args[0])
             searchname = ''
-            for arg in args[2:]:
+            for arg in args[1:]:
                 searchname += arg
-            charfile = open(f"Characters/{searchname}.pickle", "rb")
-            tempchar = pickle.load(charfile)
-            charfile.close()
+            charsheet = open(f"Characters/{searchname}.pickle", 'rb')
+            tempchar = pickle.load(charsheet)
+            charsheet.close()
+            tempchar.age = age
             os.remove(f"Characters/{searchname}.pickle")
-            tempchar.updateAttribute(args[0], value)
-            output = open(f"Characters/{searchname}.pickle", "wb")
-            pickle.dump(tempchar, output)
-            await ctx.send("Done!")
+            with open(f"Characters/{searchname}.pickle", 'wb') as newchar:
+                pickle.dump(tempchar, newchar)
+            await ctx.send(f"{ctx.author.nick if ctx.author.nick else ctx.author.name} I have finished!")
+        except ValueError:
+            await ctx.send(errormessage)
+
+
+@Colville.command()
+async def SetClass(ctx, *args: to_lower):
+    errormessage = "The use of this function is as follows: Class Character Name"
+    if not args:
+        await ctx.send("You don't appear to have provided any arguments for that command!")
+    elif len(args) < 2:
+        await ctx.send(errormessage)
+    else:
+        try:
+            charclass = args[0]
+            searchname = ''
+            for arg in args[1:]:
+                searchname += arg
+            charsheet = open(f"Characters/{searchname}.pickle", 'rb')
+            tempchar = pickle.load(charsheet)
+            charsheet.close()
+            tempchar.charClass = charclass
+            os.remove(f"Characters/{searchname}.pickle")
+            with open(f"Characters/{searchname}.pickle", 'wb') as newchar:
+                pickle.dump(tempchar, newchar)
+            await ctx.send(f"{ctx.author.nick if ctx.author.nick else ctx.author.name} I have finished!")
         except ValueError:
             await ctx.send(errormessage)
 
@@ -208,7 +280,6 @@ async def QuoteSpell(ctx, *args):
         for arg in args:
             errormessage += arg
         await ctx.send(f"I'm afraid the spell '{errormessage}' does not exist.")
-
 
 
 @Colville.command()
@@ -355,8 +426,8 @@ async def AppendQuest(ctx, *args):
 
 
 @Colville.command()
-async def PresentQuest(ctx, *args):
-    QuestName = ''.join(arg.lower() for arg in args)
+async def PresentQuest(ctx, *args: to_lower):
+    QuestName = ''.join(arg for arg in args)
     message = ''
     if not os.path.exists(f"Quests/{QuestName}.txt"):
         await ctx.send("I'm sorry, that quest doesn't seem to exist!")
@@ -367,8 +438,9 @@ async def PresentQuest(ctx, *args):
 
 
 @Colville.command()
-async def test2(ctx):
-    await ctx.send(f"This message sent by {ctx.author.nick if ctx.author.nick else ctx.author.name}")
+async def test2(ctx, *args: to_lower):
+    message = " ".join(arg for arg in args)
+    await ctx.send(message)
 
 
 @Colville.command()
@@ -385,3 +457,4 @@ async def test(ctx):
                    "life. God keep thee! Push not off from that isle, thou canst never return!")
 
 Colville.run(TOKEN)
+
